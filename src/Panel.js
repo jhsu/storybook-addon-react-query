@@ -1,28 +1,21 @@
 import React from "react";
-import { useAddonState, useChannel } from "@storybook/api";
+import { useEffect, useGlobals } from "@storybook/addons";
+import { useParameter } from "@storybook/api";
 import { AddonPanel } from "@storybook/components";
-import { ADDON_ID, EVENTS } from "./constants";
-import { PanelContent } from "./components/PanelContent";
+import { ADDON_ID } from "./constants";
 
+import { QueryClientProvider, QueryClient } from "react-query";
+import { ReactQueryDevtoolsPanel } from "react-query/devtools";
+
+const defaultClient = new QueryClient();
 export const Panel = (props) => {
-  // https://storybook.js.org/docs/react/addons/addons-api#useaddonstate
-  const [results, setState] = useAddonState(ADDON_ID, {
-    danger: [],
-    warning: [],
-  });
-
-  // https://storybook.js.org/docs/react/addons/addons-api#usechannel
-  const emit = useChannel({
-    [EVENTS.RESULT]: (newResults) => setState(newResults),
-  });
+  const { client } = useParameter("reactQuery", { client: defaultClient });
 
   return (
     <AddonPanel {...props}>
-      <PanelContent
-        results={results}
-        fetchData={() => emit(EVENTS.REQUEST)}
-        clearData={() => emit(EVENTS.CLEAR)}
-      />
+      <QueryClientProvider client={client}>
+        <ReactQueryDevtoolsPanel style={{ height: "100%" }} />
+      </QueryClientProvider>
     </AddonPanel>
   );
 };
